@@ -1,0 +1,14 @@
+# Kaggle đã có sẵn: torch, torchvision, transformers, pillow, numpy
+# Chỉ cần install thêm:
+datasets>=2.19.0
+opencv-python>=4.9.0
+accelerate>=0.30.0
+
+# 4-bit quantization (Qwen3-VL-8B-4bit)
+bitsandbytes>=0.43.0
+transformers>=4.52.0      # cần cho Qwen3-VL (Qwen2_5_VLForConditionalGeneration)
+qwen-vl-utils>=0.0.8      # process_vision_info cho Qwen2.5/3-VL pipeline
+
+# Video decoding (OpenVid-1M)
+decord>=0.6.0              # decode video nhanh; fallback về opencv nếu không có
+requests>=2.31.0           # tải video từ URL

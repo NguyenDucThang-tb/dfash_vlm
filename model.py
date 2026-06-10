@@ -117,6 +117,7 @@ def _build_infer_position_plan(
     input_ids: torch.LongTensor,
     output_len: int,
     image_grid_thw: Optional[torch.Tensor],
+    video_grid_thw: Optional[torch.Tensor] = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """
     Returns:
@@ -133,7 +134,7 @@ def _build_infer_position_plan(
         prefill_pos_ids, _ = target.model.get_rope_index(
             input_ids=input_ids,
             image_grid_thw=image_grid_thw,
-            video_grid_thw=None,
+            video_grid_thw=video_grid_thw,
             attention_mask=attention_mask,
         )
         prefill_pos_ids = prefill_pos_ids.to(input_ids.device)
@@ -193,6 +194,8 @@ def dflash_generate(
     temperature: float,
     pixel_values: Optional[torch.Tensor] = None,
     image_grid_thw: Optional[torch.Tensor] = None,
+    pixel_values_videos: Optional[torch.Tensor] = None,
+    video_grid_thw: Optional[torch.Tensor] = None,
     block_size: Optional[int] = None,
     mask_token_id: Optional[int] = None,
     return_stats: bool = False,
@@ -213,6 +216,7 @@ def dflash_generate(
         input_ids=input_ids,
         output_len=output_ids.shape[1],
         image_grid_thw=image_grid_thw,
+        video_grid_thw=video_grid_thw,
     )
     use_mrope = bool(getattr(model, "use_mrope", False))
     if return_stats and INFER_POS_DEBUG:
@@ -237,6 +241,9 @@ def dflash_generate(
     if pixel_values is not None:
         target_kwargs["pixel_values"] = pixel_values
         target_kwargs["image_grid_thw"] = image_grid_thw
+    if pixel_values_videos is not None:
+        target_kwargs["pixel_values_videos"] = pixel_values_videos
+        target_kwargs["video_grid_thw"] = video_grid_thw
 
     output = target(
         input_ids,
@@ -538,6 +545,8 @@ class DFlashDraftModel(Qwen3PreTrainedModel):
         temperature: float,
         pixel_values: Optional[torch.Tensor] = None,
         image_grid_thw: Optional[torch.Tensor] = None,
+        pixel_values_videos: Optional[torch.Tensor] = None,
+        video_grid_thw: Optional[torch.Tensor] = None,
     ):
         self.eval()
         return dflash_generate(
@@ -549,4 +558,6 @@ class DFlashDraftModel(Qwen3PreTrainedModel):
             temperature=temperature,
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thw,
+            pixel_values_videos=pixel_values_videos,
+            video_grid_thw=video_grid_thw,
         )
